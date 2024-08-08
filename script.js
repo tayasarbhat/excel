@@ -12,9 +12,19 @@ function handleFileSelect(event) {
         const htmlString = XLSX.utils.sheet_to_html(worksheet);
         document.getElementById('tableContainer').innerHTML = htmlString;
 
+        adjustNumbers(); // Adjust numbers that start with 971
         registerClicks();
     };
     reader.readAsArrayBuffer(file);
+}
+
+function adjustNumbers() {
+    const cells = document.querySelectorAll('#tableContainer td');
+    cells.forEach(cell => {
+        if (cell.textContent.startsWith('971')) {
+            cell.textContent = '0' + cell.textContent.slice(3);
+        }
+    });
 }
 
 function registerClicks() {
