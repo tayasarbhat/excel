@@ -1,0 +1,15 @@
+/* Basic table styling */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+td, th {
+    border: 1px solid black; /* Visible borders for clarity */
+    text-align: left;
+    padding: 8px;
+}
+
+.clicked {
+    background-color: #ffdddd; /* Light red background for clicked cells */
+}
