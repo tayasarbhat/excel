@@ -1,188 +1,171 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>CSV File Processor</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f6f8;
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background-color: #ffffff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
-        }
-        h1 {
-            text-align: center;
-            color: #333333;
-        }
-        input[type="file"] {
-            display: block;
-            width: 100%;
-            margin: 15px 0;
-        }
-        button {
-            width: 100%;
-            background-color: #007BFF;
-            color: #ffffff;
-            border: none;
-            padding: 15px;
-            font-size: 16px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 15px;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        table th, table td {
-            border: 1px solid #ccc;
-            padding: 8px;
-            text-align: left;
-        }
-        table th {
-            background-color: #e9ecef;
-        }
-        #download-button {
-            margin-top: 20px;
-            display: none;
-            text-align: center;
-        }
-        #download-button a {
-            color: #007BFF;
-            text-decoration: none;
-            font-size: 18px;
-        }
-        #download-button a:hover {
-            text-decoration: underline;
-        }
-        label {
-            font-size: 16px;
-            color: #333333;
-            display: block;
-            margin-top: 10px;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phone Numbers</title>
+<!-- Include Bootstrap CSS via CDN -->
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+<!-- Include DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
+
+<!-- Custom CSS -->
+<style>
+body {
+    padding: 20px;
+    background-color: #FFECEC; /* Very light shade of IndianRed */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+h1 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #CD5C5C; /* IndianRed */
+}
+#phoneTable {
+    margin-top: 20px;
+}
+.table thead th {
+    background-color: #CD5C5C; /* IndianRed */
+    color: #fff;
+}
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: #FFDADA; /* Lighter shade of IndianRed */
+}
+.table-striped tbody tr:nth-of-type(even) {
+    background-color: #FFFFFF; /* White */
+}
+.form-control-file {
+    margin-bottom: 20px;
+}
+.input-comment {
+    width: 100%;
+    box-sizing: border-box;
+}
+</style>
 </head>
 <body>
 
 <div class="container">
-    <h1>CSV File Processor</h1>
-    <label for="csv-file">Select a CSV file:</label>
-    <input type="file" id="csv-file" accept=".csv">
-    <button id="process-button">Process CSV File</button>
-    <div id="download-button"></div>
-    <table id="csv-table"></table>
+    <h1>Phone Numbers</h1>
+    <div class="form-group">
+        <input type="file" class="form-control-file" id="csvFileInput" accept=".csv">
+    </div>
+    <table class="table table-striped" id="phoneTable">
+        <thead>
+            <tr>
+                <th>S.No.</th>
+                <th>Phone Number</th>
+                <th>Comment</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Rows will be added here dynamically -->
+        </tbody>
+    </table>
 </div>
 
-<!-- Include Papa Parse Library from CDN -->
-<script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
+<!-- Include jQuery and Bootstrap JS via CDN -->
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<!-- Include DataTables JS -->
+<script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
+<!-- Include Bootstrap JS -->
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<!-- Custom JS -->
 <script>
-    document.getElementById('process-button').addEventListener('click', function() {
-        const fileInput = document.getElementById('csv-file');
+document.getElementById('csvFileInput').addEventListener('change', function(e) {
+    var file = e.target.files[0];
+    if (file) {
+        // Read the file
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            var contents = e.target.result;
+            processCSV(contents);
+        };
+        reader.readAsText(file);
+    }
+});
 
-        if (!fileInput.files.length) {
-            alert('Please select a CSV file.');
-            return;
+function processCSV(csvText) {
+    var lines = csvText.split(/\r\n|\n/);
+    var phoneNumbers = [];
+    for (var i = 0; i < lines.length; i++) {
+        var line = lines[i].trim();
+        if (line) {
+            phoneNumbers.push(line);
         }
+    }
+    displayPhoneNumbers(phoneNumbers);
+}
 
-        const file = fileInput.files[0];
+function processPhoneNumber(number) {
+    number = number.trim();
+    if (number.startsWith('971')) {
+        number = number.substring(3);
+        number = '0' + number;
+    }
+    return number;
+}
 
-        Papa.parse(file, {
-            header: true,
-            skipEmptyLines: true,
-            dynamicTyping: false,
-            complete: function(results) {
-                let data = results.data;
-                const header = results.meta.fields;
+function displayPhoneNumbers(phoneNumbers) {
+    var tbody = document.querySelector('#phoneTable tbody');
+    tbody.innerHTML = '';
+    for (var i = 0; i < phoneNumbers.length; i++) {
+        var originalNumber = phoneNumbers[i];
+        var processedNumber = processPhoneNumber(originalNumber);
 
-                if (header.length !== 1) {
-                    alert('The CSV file should contain only one column.');
-                    return;
-                }
+        // Get any existing comment from localStorage
+        var comment = localStorage.getItem('comment_' + processedNumber) || '';
 
-                const columnName = header[0];
+        // Create table row
+        var tr = document.createElement('tr');
 
-                // Process data
-                data = data.map((row, rowIndex) => {
-                    let originalValue = row[columnName];
-                    if (originalValue !== undefined && originalValue !== null) {
-                        // Convert value to string and trim whitespace
-                        let numStr = String(originalValue).trim();
+        // Serial Number cell
+        var tdSerial = document.createElement('td');
+        tdSerial.textContent = i + 1;
+        tr.appendChild(tdSerial);
 
-                        // Remove '971' from the beginning if present
-                        if (numStr.startsWith('971')) {
-                            numStr = numStr.substring(3);
-                        }
+        // Phone Number cell
+        var tdNumber = document.createElement('td');
+        tdNumber.textContent = processedNumber;
+        tr.appendChild(tdNumber);
 
-                        // Remove any leading zeros
-                        numStr = numStr.replace(/^0+/, '');
+        // Comment cell
+        var tdComment = document.createElement('td');
+        var inputComment = document.createElement('input');
+        inputComment.type = 'text';
+        inputComment.value = comment;
+        inputComment.className = 'form-control input-comment';
+        inputComment.dataset.number = processedNumber;
 
-                        // Add '0' at the beginning
-                        numStr = '0' + numStr;
-
-                        // Update the row
-                        row[columnName] = numStr;
-                    }
-                    return row;
-                });
-
-                // Display data in table
-                const table = document.getElementById('csv-table');
-                table.innerHTML = '';
-
-                // Create table headers
-                const headerRow = document.createElement('tr');
-                header.forEach(function(key) {
-                    const th = document.createElement('th');
-                    th.textContent = key;
-                    headerRow.appendChild(th);
-                });
-                table.appendChild(headerRow);
-
-                // Create table rows
-                data.forEach(function(row) {
-                    const tr = document.createElement('tr');
-                    header.forEach(function(key) {
-                        const td = document.createElement('td');
-                        td.textContent = row[key];
-                        tr.appendChild(td);
-                    });
-                    table.appendChild(tr);
-                });
-
-                // Enable download button
-                const csvContent = Papa.unparse(data);
-                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-                const url = URL.createObjectURL(blob);
-
-                const downloadDiv = document.getElementById('download-button');
-                downloadDiv.innerHTML = '';
-                const downloadLink = document.createElement('a');
-                downloadLink.href = url;
-                downloadLink.download = 'processed.csv';
-                downloadLink.textContent = 'Download Processed CSV';
-                downloadDiv.appendChild(downloadLink);
-                downloadDiv.style.display = 'block';
-            },
-            error: function(error) {
-                console.error('Error parsing CSV file:', error);
-                alert('Error parsing CSV file. Please check the file format.');
-            }
+        // Add event listener to save comment on change
+        inputComment.addEventListener('change', function() {
+            var number = this.dataset.number;
+            var comment = this.value;
+            localStorage.setItem('comment_' + number, comment);
         });
-    });
-</script>
 
+        tdComment.appendChild(inputComment);
+        tr.appendChild(tdComment);
+
+        tbody.appendChild(tr);
+    }
+
+    // Initialize DataTable with ordering disabled
+    if ($.fn.dataTable.isDataTable('#phoneTable')) {
+        $('#phoneTable').DataTable().destroy();
+    }
+    $('#phoneTable').DataTable({
+        paging: true,
+        searching: true,
+        info: false,
+        autoWidth: false,
+        ordering: false, // Disable ordering to keep the original order
+        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "All"]],
+        pageLength: 10
+    });
+}
+</script>
+ <footer>&copy; TAB</footer>
 </body>
 </html>
